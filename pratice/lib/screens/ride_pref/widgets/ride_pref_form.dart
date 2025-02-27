@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../../../model/ride/locations.dart';
 import '../../../model/ride_pref/ride_pref.dart';
-import '../../../service/ride_prefs_service.dart';
-import '../../../theme/theme.dart';
+import '../../../ride_result/ride_screen.dart';
+import '../../../theme/theme.dart' show BlaColors, BlaTextStyles;
 import '../../../utils/animations_util.dart';
 import '../../../utils/date_time_util.dart';
+import '../../../widgets/actions/bla_button.dart';
 import '../../../widgets/display/bla_divider.dart';
-import '../ride_pref_screen.dart';
+import '../location_picker.dart';
 
 ///
 /// A Ride Preference From is a view to select:
@@ -71,6 +72,11 @@ class _RidePrefFormState extends State<RidePrefForm> {
   // to show the location picker when you search for destination and location
   void _showLocationPicker(BuildContext context, bool isDeparture) {
     // Using AninationUtils to make tween animation where the dialog will slide up and stop at the center
+    Navigator.push(context, AnimationUtils.createBottomToTopRoute(
+        LocationPicker(onLocationSelected: (location) {
+      setState(() => isDeparture ? departure = location : arrival = location);
+      Navigator.pop(context);
+    })));
   }
 
   // ----------------------------------
@@ -132,21 +138,49 @@ class _RidePrefFormState extends State<RidePrefForm> {
           //Requested Seats Field
           inputFieldTile(
             Icons.people,
-            "Requested Seats: $requestedSeats",
-            Icons.add,
-            () {
-              setState(() {
-                requestedSeats++;
-              });
-            },
+            "$requestedSeats",
+            null,
             // To open the seat picker:
+            () => SeatPicker.show(
+              context: context,
+              initialSeats: requestedSeats,
+              onSeatsChanged: (newSeats) =>
+                  setState(() => requestedSeats = newSeats),
+            ),
           ),
           //Booking Button
           BlaButton(
-              type: 'primary',
-              icon: Icons.calendar_today,
-              label: 'Request to book',
-              onPressed: () {}),
+              type: BlaButtonType.primary,
+              label: "Search",
+              // Search for the rides if there is any available
+              onPressedBlaButton: () {
+                if (departure == null || arrival == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        backgroundColor: BlaColors.neutral,
+                        content: Text(
+                          "Please select both locations",
+                          style: BlaTextStyles.label,
+                        )),
+                  );
+                  return;
+                }
+
+                final currentPref = RidePref(
+                  departure: departure!,
+                  arrival: arrival!,
+                  departureDate: departureDate,
+                  requestedSeats: requestedSeats,
+                );
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        RidesScreen(selectedPref: currentPref),
+                  ),
+                );
+              }),
         ],
       ),
     );
