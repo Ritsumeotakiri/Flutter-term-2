@@ -115,6 +115,7 @@ class _RidePrefScreenState extends State<RidePrefScreen> {
                       ),
                     ),
                   ),
+                  //add BlaButton
                   SizedBox(
                     height: BlaSpacings.m,
                   ),
@@ -122,7 +123,7 @@ class _RidePrefScreenState extends State<RidePrefScreen> {
                   BlaButton(
                     type: 'primary',
                     icon: Icons.calendar_month,
-                    label: 'request to book',
+                    label: 'Request to book',
                     onPressed: () {
                       // Handle button press
                     },
